@@ -1,0 +1,154 @@
+<div class="page">
+  @if (loading()) {
+    <div class="loading-overlay">
+      <span class="spinner"></span>
+      <span>Cargando simulación…</span>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+    <a routerLink="/clients" class="btn btn-outline" style="margin-top:1rem">← Volver a clientes</a>
+  } @else if (loan(); as loan) {
+    <div class="page-header">
+      <div>
+        <a routerLink="/clients" class="back-link">← Volver a clientes</a>
+        <h1 class="page-title">Detalle de simulación</h1>
+        <p class="page-subtitle">ID: {{ loan.id }}</p>
+      </div>
+      <span class="badge" [class]="statusClass(loan.status)">{{ statusLabel(loan.status) }}</span>
+    </div>
+
+    @if (loan.rejectionReason) {
+      <div class="alert alert-error">{{ loan.rejectionReason }}</div>
+    }
+
+    <div class="summary-section">
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-label">Valor propiedad</span>
+          <span class="summary-value">{{ formatCurrency(loan.propertyValue) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Cuota inicial</span>
+          <span class="summary-value">{{ formatCurrency(loan.downPayment) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Monto del crédito</span>
+          <span class="summary-value">{{ formatCurrency(loan.loanAmount) }}</span>
+        </div>
+        <div class="summary-item highlight">
+          <span class="summary-label">Cuota mensual</span>
+          <span class="summary-value-lg">{{ formatCurrency(loan.monthlyPayment) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Plazo</span>
+          <span class="summary-value">{{ loan.termInYears }} años</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tasa anual</span>
+          <span class="summary-value">{{ formatPercent(loan.annualInterestRate) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total intereses</span>
+          <span class="summary-value text-warning">{{ formatCurrency(loan.totalInterest) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total a pagar</span>
+          <span class="summary-value">{{ formatCurrency(loan.totalPayment) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="explain-section">
+      <div class="explain-header">
+        <div class="explain-header-text">
+          <h2 class="section-title">Explicación para el cliente</h2>
+          <p class="explain-subtitle">Análisis en lenguaje natural generado por IA</p>
+        </div>
+        @if (!explanation()) {
+          <button
+            class="btn-explain"
+            [disabled]="explainLoading()"
+            (click)="requestExplanation()">
+            @if (explainLoading()) {
+              <span class="spinner spinner-sm"></span>
+              Generando…
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              Solicitar explicación
+            }
+          </button>
+        }
+      </div>
+
+      @if (explainError()) {
+        <div class="explain-error">
+          {{ explainError() }}
+          <button class="explain-retry" (click)="requestExplanation()">Reintentar</button>
+        </div>
+      }
+
+      @if (!explanation() && !explainLoading() && !explainError()) {
+        <div class="explain-empty">
+          <p>Genera una explicación clara y honesta de esta simulación, lista para compartir con el cliente.</p>
+        </div>
+      }
+
+      @if (explanation()) {
+        <div class="explain-body">
+          <div class="explain-text" [innerHTML]="explanation() | markdown"></div>
+          <button class="explain-regenerate" (click)="requestExplanation()" [disabled]="explainLoading()">
+            @if (explainLoading()) {
+              <span class="spinner spinner-sm"></span>
+            }
+            Regenerar
+          </button>
+        </div>
+      }
+    </div>
+
+    <div class="table-section">
+      <div class="table-header">
+        <h2 class="section-title">Tabla de amortización</h2>
+        <span class="total-rows">{{ loan.amortizationSchedule.length }} cuotas totales</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Cuota</th>
+              <th>Pago total</th>
+              <th>Capital</th>
+              <th>Interés</th>
+              <th>Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of pagedEntries(); track entry.month) {
+              <tr [class.last-row]="entry.month === loan.amortizationSchedule.length">
+                <td class="cell-month">{{ entry.month }}</td>
+                <td>{{ formatCurrency(entry.payment) }}</td>
+                <td class="cell-principal">{{ formatCurrency(entry.principal) }}</td>
+                <td class="cell-interest">{{ formatCurrency(entry.interest) }}</td>
+                <td class="cell-balance">{{ formatCurrency(entry.balance) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" [disabled]="page() === 1" (click)="setPage(page() - 1)">‹ Anterior</button>
+          <span class="page-info">Página {{ page() }} de {{ totalPages() }}</span>
+          @for (p of pages(); track p) {
+            @if (p === 1 || p === totalPages() || (p >= page() - 2 && p <= page() + 2)) {
+              <button class="page-btn" [class.active]="p === page()" (click)="setPage(p)">{{ p }}</button>
+            }
+          }
+          <button class="page-btn" [disabled]="page() === totalPages()" (click)="setPage(page() + 1)">Siguiente ›</button>
+        </div>
+      }
+    </div>
+  }
+</div>

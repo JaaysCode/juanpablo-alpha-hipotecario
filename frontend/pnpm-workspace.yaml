@@ -1,0 +1,7 @@
+# pnpm workspace configuration
+
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false

@@ -1,0 +1,238 @@
+<div class="page">
+
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <a routerLink="/clients" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M8.75 2.5 3.5 7l5.25 4.5"/>
+      </svg>
+      Volver a clientes
+    </a>
+    <h1 class="page-title">Nuevo cliente</h1>
+  </div>
+
+  <!-- ── Alerts ───────────────────────────────────────────── -->
+  @if (success()) {
+    <div class="alert alert-success" [@slideDown] role="status">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm3.78 5.22a.75.75 0 0 0-1.06-1.06L7 8.88 5.28 7.16a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.25-4.25Z"/>
+      </svg>
+      Cliente creado. Redirigiendo a la lista…
+    </div>
+  }
+
+  @if (serverError()) {
+    <div class="alert alert-error" [@slideDown] role="alert">{{ serverError() }}</div>
+  }
+
+  <!-- ── Form ─────────────────────────────────────────────── -->
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+
+    <!-- Section: Personal data -->
+    <div class="form-section">
+      <h2 class="section-title">Datos personales</h2>
+      <div class="form-grid">
+
+        <div class="field">
+          <label class="label" for="nationalId">Cédula / Identificación <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="nationalId"
+            class="input"
+            [class.input-error]="isInvalid('nationalIdentification')"
+            formControlName="nationalIdentification"
+            placeholder="1234567890"
+            autocomplete="off"
+          />
+          @if (isInvalid('nationalIdentification')) {
+            <span class="field-error" role="alert">{{ getError('nationalIdentification') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="firstName">Nombre <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="firstName"
+            class="input"
+            [class.input-error]="isInvalid('firstName')"
+            formControlName="firstName"
+            placeholder="Juan"
+            autocomplete="given-name"
+          />
+          @if (isInvalid('firstName')) {
+            <span class="field-error" role="alert">{{ getError('firstName') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="lastName">Apellido <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="lastName"
+            class="input"
+            [class.input-error]="isInvalid('lastName')"
+            formControlName="lastName"
+            placeholder="Pérez"
+            autocomplete="family-name"
+          />
+          @if (isInvalid('lastName')) {
+            <span class="field-error" role="alert">{{ getError('lastName') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="dateOfBirth">Fecha de nacimiento <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="dateOfBirth"
+            class="input"
+            type="date"
+            [class.input-error]="isInvalid('dateOfBirth')"
+            formControlName="dateOfBirth"
+          />
+          @if (isInvalid('dateOfBirth')) {
+            <span class="field-error" role="alert">{{ getError('dateOfBirth') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="email">Email <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="email"
+            class="input"
+            type="email"
+            [class.input-error]="isInvalid('email')"
+            formControlName="email"
+            placeholder="juan.perez@email.com"
+            autocomplete="email"
+          />
+          @if (isInvalid('email')) {
+            <span class="field-error" role="alert">{{ getError('email') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="phoneNumber">Teléfono <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="phoneNumber"
+            class="input"
+            type="tel"
+            [class.input-error]="isInvalid('phoneNumber')"
+            formControlName="phoneNumber"
+            placeholder="3001234567"
+            autocomplete="tel"
+          />
+          @if (isInvalid('phoneNumber')) {
+            <span class="field-error" role="alert">{{ getError('phoneNumber') }}</span>
+          }
+        </div>
+
+        <div class="field field-full">
+          <label class="label" for="currentAddress">Dirección</label>
+          <input
+            id="currentAddress"
+            class="input"
+            [class.input-error]="isInvalid('currentAddress')"
+            formControlName="currentAddress"
+            placeholder="Calle 123 # 45-67, Bogotá"
+            autocomplete="street-address"
+          />
+          @if (isInvalid('currentAddress')) {
+            <span class="field-error" role="alert">{{ getError('currentAddress') }}</span>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Section: Financial data -->
+    <div class="form-section">
+      <h2 class="section-title">Información financiera y laboral</h2>
+      <div class="form-grid">
+
+        <div class="field">
+          <label class="label" for="monthlyIncome">Ingreso mensual (COP) <span class="required" aria-hidden="true">*</span></label>
+          <input
+            id="monthlyIncome"
+            class="input"
+            type="number"
+            min="0"
+            step="1000"
+            [class.input-error]="isInvalid('monthlyIncome')"
+            formControlName="monthlyIncome"
+            placeholder="5000000"
+          />
+          @if (isInvalid('monthlyIncome')) {
+            <span class="field-error" role="alert">{{ getError('monthlyIncome') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="monthlyExpenses">Gastos mensuales (COP)</label>
+          <input
+            id="monthlyExpenses"
+            class="input"
+            type="number"
+            min="0"
+            step="1000"
+            formControlName="monthlyExpenses"
+            placeholder="1500000"
+          />
+        </div>
+
+        <div class="field">
+          <label class="label" for="numberOfDependents">N.° dependientes</label>
+          <input
+            id="numberOfDependents"
+            class="input"
+            type="number"
+            min="0"
+            formControlName="numberOfDependents"
+            placeholder="2"
+          />
+        </div>
+
+        <div class="field">
+          <label class="label" for="employmentType">Tipo de empleo <span class="required" aria-hidden="true">*</span></label>
+          <select
+            id="employmentType"
+            class="input"
+            [class.input-error]="isInvalid('employmentType')"
+            formControlName="employmentType"
+          >
+            <option value="">Seleccionar…</option>
+            @for (type of employmentTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+          @if (isInvalid('employmentType')) {
+            <span class="field-error" role="alert">{{ getError('employmentType') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="company">Empresa</label>
+          <input
+            id="company"
+            class="input"
+            formControlName="company"
+            placeholder="Alpha Ingenuity S.A.S"
+            autocomplete="organization"
+          />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <a routerLink="/clients" class="btn btn-ghost">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner spinner-sm" aria-hidden="true"></span>
+          Guardando…
+        } @else {
+          Crear cliente
+        }
+      </button>
+    </div>
+
+  </form>
+</div>

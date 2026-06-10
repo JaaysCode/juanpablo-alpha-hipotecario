@@ -1,0 +1,156 @@
+<div class="page">
+
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Clientes</h1>
+      <p class="page-subtitle">{{ total() }} cliente(s) registrado(s)</p>
+    </div>
+    <a routerLink="/clients/new" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+        <path d="M7 1a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 7 1Z"/>
+      </svg>
+      Nuevo cliente
+    </a>
+  </div>
+
+  <!-- ── Toolbar ──────────────────────────────────────────── -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+      </svg>
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Buscar por nombre, cédula o email…"
+        [value]="search()"
+        (input)="onSearchChange($any($event.target).value)"
+        aria-label="Buscar clientes"
+        autocomplete="off"
+      />
+      @if (search()) {
+        <button class="search-clear" (click)="clearSearch()" aria-label="Limpiar búsqueda" type="button">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
+            <path d="M.293.293a1 1 0 0 1 1.414 0L5 3.586 8.293.293a1 1 0 1 1 1.414 1.414L6.414 5l3.293 3.293a1 1 0 0 1-1.414 1.414L5 6.414 1.707 9.707A1 1 0 0 1 .293 8.293L3.586 5 .293 1.707A1 1 0 0 1 .293.293Z"/>
+          </svg>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Error banner ──────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error" [@slideDown]>{{ error() }}</div>
+  }
+
+  <!-- ── Table ─────────────────────────────────────────────── -->
+  <div class="table-wrap">
+    <table class="table" aria-label="Lista de clientes">
+      <thead>
+        <tr>
+          <th scope="col">Nombre</th>
+          <th scope="col">Cédula</th>
+          <th scope="col" class="col-email">Email</th>
+          <th scope="col" class="col-income">Ingreso mensual</th>
+          <th scope="col">Tipo empleo</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of skeletonRows; track $index) {
+            <tr class="skeleton-row">
+              <td><div class="skeleton skel-lg"></div></td>
+              <td><div class="skeleton skel-md"></div></td>
+              <td class="col-email"><div class="skeleton skel-xl"></div></td>
+              <td class="col-income"><div class="skeleton skel-sm"></div></td>
+              <td><div class="skeleton skel-badge"></div></td>
+              <td></td>
+            </tr>
+          }
+        } @else {
+          @if (clients().length === 0) {
+            <tr>
+              <td colspan="6" class="empty-cell">
+                @if (search()) {
+                  <div class="empty-state">
+                    <p class="empty-title">Sin resultados para "{{ search() }}"</p>
+                    <button class="empty-action" (click)="clearSearch()" type="button">
+                      Limpiar búsqueda
+                    </button>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <p class="empty-title">Aún no hay clientes registrados</p>
+                    <a routerLink="/clients/new" class="empty-action">Registrar primer cliente</a>
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+          @for (c of clients(); track c.id) {
+            <tr
+              class="table-row"
+              [style]="{ '--row-delay': $index * 38 + 'ms' }"
+              (click)="goToDetail(c.id)"
+            >
+              <td class="cell-name">{{ fullName(c) }}</td>
+              <td class="cell-mono">{{ c.nationalIdentification }}</td>
+              <td class="cell-muted col-email">{{ c.email }}</td>
+              <td class="cell-income col-income">{{ formatCurrency(c.monthlyIncome) }}</td>
+              <td>
+                <span class="badge badge-neutral">{{ c.employmentType }}</span>
+              </td>
+              <td class="cell-actions">
+                <a
+                  [routerLink]="['/loans/simulate']"
+                  [queryParams]="{ nationalId: c.nationalIdentification }"
+                  class="btn btn-sm btn-outline"
+                  (click)="$event.stopPropagation()"
+                >
+                  Simular crédito
+                </a>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Pagination ─────────────────────────────────────────── -->
+  @if (!loading() && totalPages() > 1) {
+    <div class="pagination">
+      <button
+        class="page-btn page-btn-icon"
+        [disabled]="page() === 1"
+        (click)="loadPage(page() - 1)"
+        aria-label="Página anterior"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M9.78 4.22a.75.75 0 0 1 0 1.06L7.06 8l2.72 2.72a.75.75 0 1 1-1.06 1.06L5.47 8.53a.75.75 0 0 1 0-1.06l3.25-3.25a.75.75 0 0 1 1.06 0Z"/>
+        </svg>
+      </button>
+      @for (p of pages(); track p) {
+        <button
+          class="page-btn"
+          [class.active]="p === page()"
+          (click)="loadPage(p)"
+          [attr.aria-current]="p === page() ? 'page' : null"
+        >{{ p }}</button>
+      }
+      <button
+        class="page-btn page-btn-icon"
+        [disabled]="page() === totalPages()"
+        (click)="loadPage(page() + 1)"
+        aria-label="Página siguiente"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 1 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"/>
+        </svg>
+      </button>
+    </div>
+  }
+
+</div>

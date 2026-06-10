@@ -1,0 +1,206 @@
+<div class="page">
+
+  <!-- ── Loading ─────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="skeleton-page">
+      <div class="skeleton-header">
+        <div class="skeleton skel-back"></div>
+        <div class="skeleton skel-title"></div>
+        <div class="skeleton skel-badge-sm"></div>
+      </div>
+      <div class="info-card">
+        <div class="skeleton skel-section-title"></div>
+        <div class="info-grid">
+          @for (_ of [1,2,3,4,5,6]; track $index) {
+            <div class="info-item">
+              <div class="skeleton skel-label"></div>
+              <div class="skeleton skel-value"></div>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="info-card" style="margin-top: 1rem">
+        <div class="skeleton skel-section-title"></div>
+        <div class="info-grid">
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="info-item">
+              <div class="skeleton skel-label"></div>
+              <div class="skeleton skel-value"></div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Error ────────────────────────────────────────────────── -->
+  @else if (error()) {
+    <a routerLink="/clients" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M8.75 2.5 3.5 7l5.25 4.5"/>
+      </svg>
+      Volver a clientes
+    </a>
+    <div class="alert alert-error" style="margin-top:1rem">{{ error() }}</div>
+  }
+
+  <!-- ── Content ──────────────────────────────────────────────── -->
+  @else if (client(); as c) {
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <a routerLink="/clients" class="back-link">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8.75 2.5 3.5 7l5.25 4.5"/>
+          </svg>
+          Volver a clientes
+        </a>
+        <div class="title-row">
+          <h1 class="page-title">{{ fullName(c) }}</h1>
+          <span class="cc-chip">CC {{ c.nationalIdentification }}</span>
+        </div>
+        <p class="page-subtitle">Cliente desde {{ formatDate(c.createdAt) }}</p>
+      </div>
+      <a
+        [routerLink]="['/loans/simulate']"
+        [queryParams]="{ nationalId: c.nationalIdentification }"
+        class="btn btn-primary"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+          <path d="M7 1a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 7 1Z"/>
+        </svg>
+        Simular crédito
+      </a>
+    </div>
+
+    <!-- ── Section: Personal data ─────────────────────────────── -->
+    <div class="info-card">
+      <h2 class="section-title">Datos personales</h2>
+      <div class="info-grid">
+
+        <div class="info-item">
+          <span class="info-label">Cédula</span>
+          <span class="info-value info-mono">{{ c.nationalIdentification }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Nombre completo</span>
+          <span class="info-value">{{ fullName(c) }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Fecha de nacimiento</span>
+          <span class="info-value">{{ formatDate(c.dateOfBirth) }} <span class="info-muted">({{ age(c.dateOfBirth) }} años)</span></span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <a [href]="'mailto:' + c.email" class="info-value info-link">{{ c.email }}</a>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Teléfono</span>
+          <a [href]="'tel:' + c.phoneNumber" class="info-value info-link">{{ c.phoneNumber }}</a>
+        </div>
+
+        @if (c.currentAddress) {
+          <div class="info-item info-item-full">
+            <span class="info-label">Dirección</span>
+            <span class="info-value">{{ c.currentAddress }}</span>
+          </div>
+        }
+
+      </div>
+    </div>
+
+    <!-- ── Section: Financial & employment ───────────────────── -->
+    <div class="info-card">
+      <h2 class="section-title">Información financiera y laboral</h2>
+      <div class="info-grid">
+
+        <div class="info-item">
+          <span class="info-label">Tipo de empleo</span>
+          <span class="badge badge-neutral">{{ employmentLabel(c.employmentType) }}</span>
+        </div>
+
+        @if (c.company) {
+          <div class="info-item">
+            <span class="info-label">Empresa</span>
+            <span class="info-value">{{ c.company }}</span>
+          </div>
+        }
+
+        <div class="info-item">
+          <span class="info-label">Ingreso mensual</span>
+          <span class="info-value info-highlight">{{ formatCurrency(c.monthlyIncome) }}</span>
+        </div>
+
+        @if (c.monthlyExpenses !== null) {
+          <div class="info-item">
+            <span class="info-label">Gastos mensuales</span>
+            <span class="info-value">{{ formatCurrency(c.monthlyExpenses!) }}</span>
+          </div>
+        }
+
+        @if (c.numberOfDependents !== null) {
+          <div class="info-item">
+            <span class="info-label">Dependientes</span>
+            <span class="info-value">{{ c.numberOfDependents }}</span>
+          </div>
+        }
+
+      </div>
+    </div>
+
+    <!-- ── Section: Loans ─────────────────────────────────────── -->
+    <div class="loans-section">
+      <div class="loans-header">
+        <h2 class="section-title-standalone">Simulaciones de crédito</h2>
+        <span class="loans-count">{{ loans().length }} simulación(es)</span>
+      </div>
+
+      @if (loans().length === 0) {
+        <div class="loans-empty">
+          <p class="empty-title">Sin simulaciones registradas</p>
+          <a
+            [routerLink]="['/loans/simulate']"
+            [queryParams]="{ nationalId: c.nationalIdentification }"
+            class="empty-action"
+          >Crear primera simulación</a>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="table" aria-label="Simulaciones de crédito">
+            <thead>
+              <tr>
+                <th scope="col">Estado</th>
+                <th scope="col">Valor propiedad</th>
+                <th scope="col">Cuota mensual</th>
+                <th scope="col">Plazo</th>
+                <th scope="col" class="col-date">Fecha</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (loan of loans(); track loan.id) {
+                <tr class="table-row" [style]="{ '--row-delay': $index * 38 + 'ms' }">
+                  <td>
+                    <span class="badge" [class]="loanStatusClass(loan.status)">{{ loanStatusLabel(loan.status) }}</span>
+                  </td>
+                  <td>{{ formatCurrency(loan.propertyValue) }}</td>
+                  <td class="cell-highlight">{{ formatCurrency(loan.monthlyPayment) }}</td>
+                  <td class="cell-muted">{{ loan.termInYears }} años</td>
+                  <td class="cell-muted col-date">{{ formatDate(loan.createdAt) }}</td>
+                  <td class="cell-actions">
+                    <a [routerLink]="['/loans', loan.id]" class="btn btn-sm btn-outline">Ver detalle</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+</div>

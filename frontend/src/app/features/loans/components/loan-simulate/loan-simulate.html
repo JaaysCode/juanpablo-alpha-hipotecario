@@ -1,0 +1,127 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <a routerLink="/clients" class="back-link">← Volver a clientes</a>
+      <h1 class="page-title">Simular crédito hipotecario</h1>
+    </div>
+  </div>
+
+  <div class="layout">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-card" novalidate>
+      <h2 class="section-title">Parámetros de simulación</h2>
+
+      <div class="field">
+        <label class="label" for="nationalIdentification">Cédula del cliente *</label>
+        <input id="nationalIdentification" class="input" [class.input-error]="isInvalid('nationalIdentification')"
+          formControlName="nationalIdentification" placeholder="1234567890"
+          (blur)="onNationalIdBlur()" />
+        @if (isInvalid('nationalIdentification')) {
+          <span class="field-error">{{ getError('nationalIdentification') }}</span>
+        }
+        @if (clientLoading()) {
+          <span class="field-hint">Buscando cliente…</span>
+        }
+        @if (client()) {
+          <span class="field-hint client-found">✓ {{ clientFullName() }} — Ingreso: {{ formatCurrency(client()!.monthlyIncome) }}/mes</span>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="propertyValue">Valor de la propiedad (COP) *</label>
+        <input id="propertyValue" class="input" type="number" min="1"
+          [class.input-error]="isInvalid('propertyValue')"
+          formControlName="propertyValue" placeholder="350000000" />
+        @if (isInvalid('propertyValue')) {
+          <span class="field-error">{{ getError('propertyValue') }}</span>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="downPayment">Cuota inicial (COP) *</label>
+        <input id="downPayment" class="input" type="number" min="0"
+          [class.input-error]="isInvalid('downPayment')"
+          formControlName="downPayment" placeholder="70000000" />
+        @if (isInvalid('downPayment')) {
+          <span class="field-error">{{ getError('downPayment') }}</span>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="termInYears">Plazo (años) *</label>
+        <div class="term-options">
+          @for (t of termOptions; track t) {
+            <label class="term-pill" [class.selected]="form.value.termInYears === t">
+              <input type="radio" formControlName="termInYears" [value]="t" hidden />
+              {{ t }} años
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="annualInterestRate">Tasa efectiva anual *</label>
+        <div class="rate-wrap">
+          <input id="annualInterestRate" class="input" type="number" min="0.001" max="1" step="0.001"
+            [class.input-error]="isInvalid('annualInterestRate')"
+            formControlName="annualInterestRate" placeholder="0.12" />
+          <span class="rate-hint">ej: 0.12 = 12% EA</span>
+        </div>
+        @if (isInvalid('annualInterestRate')) {
+          <span class="field-error">{{ getError('annualInterestRate') }}</span>
+        }
+      </div>
+
+      @if (serverError()) {
+        <div class="alert alert-error">{{ serverError() }}</div>
+      }
+
+      <button type="submit" class="btn btn-primary btn-full" [disabled]="loading()">
+        @if (loading()) { Calculando… } @else { Simular crédito }
+      </button>
+    </form>
+
+    @if (result(); as loan) {
+      <div class="result-card">
+        <div class="result-header">
+          <h2 class="result-title">Resultado de la simulación</h2>
+          <span class="badge" [class]="statusClass(loan.status)">{{ statusLabel(loan.status) }}</span>
+        </div>
+
+        @if (loan.rejectionReason) {
+          <div class="alert alert-error">{{ loan.rejectionReason }}</div>
+        }
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Monto del crédito</span>
+            <span class="summary-value">{{ formatCurrency(loan.loanAmount) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Cuota mensual</span>
+            <span class="summary-value highlight">{{ formatCurrency(loan.monthlyPayment) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Plazo</span>
+            <span class="summary-value">{{ loan.termInYears }} años ({{ loan.termInYears * 12 }} cuotas)</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Tasa anual</span>
+            <span class="summary-value">{{ formatPercent(loan.annualInterestRate) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total intereses</span>
+            <span class="summary-value">{{ formatCurrency(loan.totalInterest) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total a pagar</span>
+            <span class="summary-value">{{ formatCurrency(loan.totalPayment) }}</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline btn-full" (click)="goToDetail()">
+          Ver tabla de amortización completa →
+        </button>
+      </div>
+    }
+  </div>
+</div>
