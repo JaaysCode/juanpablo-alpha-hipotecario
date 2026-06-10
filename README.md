@@ -204,13 +204,17 @@ Cachear explicaciones — misma simulación = mismo resultado. Redis/localStorag
 Tests explicador — no hay specs para ollama-loan-explainer.ts. Mockear ChatOllama, validar que el prompt contenga datos
 Security: .env con OLLAMA_HOST — ahora es default hardcoded localhost:11434 → expone setup local
 
-## 6. ¿Usaste IA durante la prueba? ¿En qué partes específicas y por qué? ¿Cuándo decidiste NO usarla?
+## 6 ¿Cuántas horas reales le dedicaste a la prueba? Honestamente.
+
+Aproximadamente entre 5 y 7 horas
+
+## 7. ¿Usaste IA durante la prueba? ¿En qué partes específicas y por qué? ¿Cuándo decidiste NO usarla?
 
 Si use IA durante la prueba, la use para la creación de carpetas, para la creación de archivos, y escritura de código, como dtos, controllers, handlers, vistas, uso de skills etc, porque esto me ayuda a recortar el tiempo que podría gastar escribiendo código manualmente y usarlo para otras tareas como por ejemplo, buscar que modelos están disponibles para el plus, cuales serían gratis para el uso de tareas como estas, también porque no soy un experto en diseño UI/UX y quería explorar nuevas skills de los agentes que no había usado antes, también la use para la dockerización, ya que no me acordaba muy bien de como se hacía y asi refresque la memoria.
 
 Decidí no usarla para decidir que arquitectura iba a utilizar, para decidir que cada modulo iba a ser hexagonal, para la estructura de los tests, y para el uso del patrón CQRS, porque aunque para esta prueba no sea algo muy robusto lo que hay que entregar, decidí hacerlo así, ya que de esta manera, y con estas decisiones, es que se debería crear un producto real, robusto y escalable en el mundo laboral y asi ahorrarse algunos problemas en el futuro.
 
-## 6. Si hiciste el Plus IA: ¿qué LLM usaste? ¿qué decisiones de prompt engineering tomaste? ¿cómo manejas los costos/errores?
+## 8. Si hiciste el Plus IA: ¿qué LLM usaste? ¿qué decisiones de prompt engineering tomaste? ¿cómo manejas los costos/errores?
 
 LLM usado: Ollama (local) + LangChain, modelo llama3.2:1b
 
