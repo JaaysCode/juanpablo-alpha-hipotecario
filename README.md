@@ -178,9 +178,6 @@ Se usa `synchronize: true` de TypeORM en desarrollo. En producción esto sería 
 **Tests de integración / E2E**  
 Se priorizaron los tests unitarios del handler de dominio (lógica de amortización y reglas de pre-aprobación) porque son los más propensos a errores de cálculo y los más valiosos para verificar correctitud del sistema francés. Los E2E requieren base de datos real y aumentan la complejidad del CI sin añadir cobertura nueva sobre la lógica financiera.
 
-**Paginación en la respuesta de amortización**  
-La tabla de amortización se retorna completa (hasta 360 cuotas para 30 años). No se paginó porque es un objeto de consulta estático — el cliente la necesita toda para mostrar el resumen financiero.
-
 **Módulo de usuarios separado**  
 El `monthlyIncome` se guarda en el cliente directamente (campo declarado). Un sistema real tendría validación crediticia externa (centrales de riesgo). Eso queda fuera del alcance de la prueba.
 
