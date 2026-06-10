@@ -186,47 +186,38 @@ Las llamadas al backend usan rutas relativas (`/api/*`). En Docker, nginx hace p
 
 ---
 
-## 4. Endpoints disponibles
+## 4. ¿Qué partes del código te dan más orgullo? ¿Por qué?
 
-La documentación interactiva completa está en **http://localhost:3000/api/docs** (Swagger UI).
+### Explicación de una simulación
 
-### Clientes
+Me siento feliz de esta parte del código, porque no me había puesto en la tarea de intentar implementar alguna funcionalidad con inteligencia artificial, por lo que me pone feliz por primera vez poder lograr esto y me causa más curiosidad que otras cosas se pueden hacer.
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| `POST` | `/clients` | Crear cliente |
-| `GET` | `/clients` | Listar clientes (paginado, búsqueda) |
-| `GET` | `/clients/:id` | Detalle de cliente |
-| `GET` | `/clients/:id/loans` | Simulaciones de un cliente |
+### Arquitectura del proyecto
 
-### Créditos
+Aunque no es código directamente, me siento orgulloso de la estructura que le di, y porque pude entender aún mas cosas acerca de esta arquitectura y sus beneficios, por ejemplo que cada módulo sea hexagonal, podría dar pie a que en un futuro se pueda convertir en un microservicio de ser necesario
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| `POST` | `/loans/simulate` | Simular crédito hipotecario |
-| `GET` | `/loans/:id` | Detalle de simulación con tabla de amortización |
+## 5. ¿Qué mejorarías si tuvieras 1 semana más?
 
----
+Streaming respuesta LLM — ahora mismo se espera a que se complete. Mostrar texto conforme llega = UX más fluido
+Fallback a template — si Ollama falla, generar explicación básica con en lugar de error
+Cachear explicaciones — misma simulación = mismo resultado. Redis/localStorage evita re-llamar LLM
+Tests explicador — no hay specs para ollama-loan-explainer.ts. Mockear ChatOllama, validar que el prompt contenga datos
+Security: .env con OLLAMA_HOST — ahora es default hardcoded localhost:11434 → expone setup local
 
-## 5. Tests
+## 6. ¿Usaste IA durante la prueba? ¿En qué partes específicas y por qué? ¿Cuándo decidiste NO usarla?
 
-```bash
-cd backend
+Si use IA durante la prueba, la use para la creación de carpetas, para la creación de archivos, y escritura de código, como dtos, controllers, handlers, vistas, uso de skills etc, porque esto me ayuda a recortar el tiempo que podría gastar escribiendo código manualmente y usarlo para otras tareas como por ejemplo, buscar que modelos están disponibles para el plus, cuales serían gratis para el uso de tareas como estas, también porque no soy un experto en diseño UI/UX y quería explorar nuevas skills de los agentes que no había usado antes, también la use para la dockerización, ya que no me acordaba muy bien de como se hacía y asi refresque la memoria.
 
-# Correr tests unitarios
-pnpm test
+Decidí no usarla para decidir que arquitectura iba a utilizar, para decidir que cada modulo iba a ser hexagonal, para la estructura de los tests, y para el uso del patrón CQRS, porque aunque para esta prueba no sea algo muy robusto lo que hay que entregar, decidí hacerlo así, ya que de esta manera, y con estas decisiones, es que se debería crear un producto real, robusto y escalable en el mundo laboral y asi ahorrarse algunos problemas en el futuro.
 
-# Con cobertura
-pnpm test:cov
-```
+## 6. Si hiciste el Plus IA: ¿qué LLM usaste? ¿qué decisiones de prompt engineering tomaste? ¿cómo manejas los costos/errores?
 
-Los tests están en `backend/test/application/loans/simulate-loan.handler.spec.ts` y cubren:
+LLM usado: Ollama (local) + LangChain, modelo llama3.2:1b
 
-1. La tabla de amortización tiene exactamente `termInYears × 12` entradas
-2. En cada cuota: `capital + interés = cuota` (tolerancia ≤ 1 COP por redondeo)
-3. El saldo final es ≈ 0 (tolerancia ≤ 1 COP)
-4. El saldo decrece monótonamente mes a mes
-5. Cuota < 25% del ingreso → estado `PRE_APPROVED`
-6. Cuota entre 25%–30% del ingreso → estado `PRE_APPROVED_WITH_OBSERVATIONS`
-7. Cuota > 30% del ingreso → estado `REJECTED` con razón "Capacidad de pago excedida."
-8. Cuota inicial ≥ valor del inmueble → `BadRequestException` (sin persistencia)
+Asignación de rol al modelo, ej: piensa como un professional banker
+Formato fijo: 4 secciones con encabezados idénticos
+Contexto numérico completo: valores COP ya formateados en prompt, no solo números crudos
+Validation implícita: incluye status + rejection reason, explica aprobación O rechazo
+
+Error handling: detecta ECONNREFUSED → devuelve message claro "Ollama no disponible" 
+numPredict: 1024 acota respuesta, temperature: 0.7 balance coherencia/variación
